@@ -16,17 +16,40 @@ let package = Package(
     products: [
         .library(
             name: "PreferenceKit",
-            targets: ["PreferenceKit"]
+            targets: [
+                "PreferenceKit",
+            ],
+        ),
+        .library(
+            name: "PreferenceKit_SwiftUI",
+            targets: [
+                "PreferenceKit_SwiftUI",
+            ],
         ),
     ],
     targets: [
         .target(
             name: "PreferenceKit"
         ),
+        .target(
+            name: "PreferenceKit_SwiftUI",
+            dependencies: [
+                "PreferenceKit",
+            ],
+        ),
         .testTarget(
             name: "PreferenceKitTests",
-            dependencies: ["PreferenceKit"]
+            dependencies: [
+                "PreferenceKit",
+            ],
+        ),
+        .testTarget(
+            name: "PreferenceKit_SwiftUITests",
+            dependencies: [
+                "PreferenceKit",
+                "PreferenceKit_SwiftUI",
+            ],
         ),
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageModes: [.v6],
 )

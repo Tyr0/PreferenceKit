@@ -4,6 +4,14 @@ A lightweight, observable interface to typed preferences on Apple platforms.
 Define each preference's key, value type, and default once, then read and write
 values through a shared store or a `UserDefaults` suite.
 
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Platforms](https://img.shields.io/badge/Platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20visionOS%20%7C%20watchOS-blue.svg)
+![Swift](https://img.shields.io/badge/Swift-6.0-orange.svg)
+
+## Overview
+
+`UserPreferences` is an `Observable` interface to the user's defaults database built around reusable and type-safe design patterns.
+
 ## Requirements
 
 - Swift 6+
@@ -18,7 +26,9 @@ preference by conforming a type to `PreferenceProtocol`:
 import PreferenceKit
 
 enum ShowDebugMenuPreference: PreferenceProtocol {
+
 	static let key = "showDebugMenu"
+
 	static let defaultValue = false
 }
 
@@ -43,19 +53,84 @@ Removing a value lets subsequent reads fall back to the default.
 Keep stored representations compatible when changing a preference's value type
 or coding implementation.
 
+### Property Wrapper
+
+Use `@Preference` to read and write a preference as a property. By default,
+the wrapper uses `UserPreferences.default`:
+
+```swift
+struct Settings {
+
+    @Preference(ShowDebugMenuPreference.self)
+    var showDebugMenu: Bool
+}
+
+let settings = Settings()
+settings.showDebugMenu = true
+```
+
+Supply a store to use a separate defaults suite or another `PreferencesProtocol`
+implementation. Initialize the backing wrapper when the store is provided at runtime:
+
+```swift
+struct Settings<Preferences> where Preferences: PreferencesProtocol {
+
+    @Preference<Preferences, ShowDebugMenuPreference>
+    var showDebugMenu: Bool
+
+    init(preferences: Preferences) {
+        self._showDebugMenu = Preference(preferences: preferences)
+    }
+}
+```
+
+Reads and writes proviede a non-throwing interface to the stores persistence layer. A failed
+read returns the default, and a failed write is logged. Use the store's named
+methods when you need to handle errors.
+
+### SwiftUI Bindings
+
+Add the `PreferenceKit_SwiftUI` library product to your target and import it.
+It also re-exports `PreferenceKit` and `SwiftUI`.
+
+```swift
+import PreferenceKit_SwiftUI
+
+struct SettingsView: View {
+
+    @Preference(ShowDebugMenuPreference.self)
+    private var showDebugMenu: Bool
+
+    var body: some View {
+        Toggle("Show Debug Menu", isOn: self._showDebugMenu.binding)
+    }
+}
+```
+
+The binding reads and writes the same store as the wrapped property; reads participate in Swift Observation.
+
+> [!NOTE]
+> Use `_showDebugMenu.binding`, or `_showDebugMenu.projectedValue`, to obtain the
+binding. The SwiftUI extension does not provide a `$showDebugMenu` accessor [due missing support at the Swift compiler level](https://forums.swift.org/t/property-wrapper-projectedvalue-cannot-be-in-a-extension/70269).
+
 ### Codable Values
 
 Preferences can also store custom `Codable` values:
 
 ```swift
 enum Appearance: Codable, Equatable, Sendable {
+
     case dark
+
     case light
+
     case system
 }
 
 enum AppearancePreference: PreferenceProtocol {
+
     static let key = "appearance"
+
     static let defaultValue = Appearance.system
 }
 
@@ -94,17 +169,19 @@ struct RootView: View {
     let preferences: UserPreferences
 
     var body: some View {
-        var hasShownOnboardingView = preferences[HasShownOnboardingViewPreference.self]
+        var shouldShowOnboardingView = preferences[ShouldShowOnboardingViewPreference.self]
 
-        let hasShownOnboardingViewBinding = Binding<Bool>(get: {
-            return hasShownOnboardingView
+        // a binding over the `shouldShowOnboardingView` copy;
+        // does not mutate the underlying preference value.
+        let shouldShowOnboardingViewBinding = Binding<Bool>(get: {
+            return shouldShowOnboardingView
         }, set: { newValue in
-            hasShownOnboardingView = newValue
+            shouldShowOnboardingView = newValue
         })
 
         ContentView()
-            .sheet(isPresented: hasShownOnboardingViewBinding, onDismiss: {
-                self.preferences[HasShownOnboardingViewPreference.self] = true
+            .sheet(isPresented: shouldShowOnboardingViewBinding, onDismiss: {
+                self.preferences[ShouldShowOnboardingViewPreference.self] = false
             }) {
                 OnboardingView()
             }
@@ -113,6 +190,64 @@ struct RootView: View {
 ```
 
 ## API
+
+#### @Preference
+
+A property wrapper type that reflects a preference from a `PreferencesProtocol`.
+
+```swift
+@propertyWrapper
+public struct Preference<Preferences, Preference>: Sendable where Preferences: PreferencesProtocol, Preference: PreferenceProtocol {
+
+    /// The value represented by the preference definition.
+    public typealias Value = Preference.Value
+
+    /// The store used to read and write the preference.
+    public let preferences: Preferences
+
+    /// The stored value, or the preference's default when reading fails or no value exists.
+    ///
+    /// Writes update the store immediately. Failed writes are logged without
+    /// propagating an error; use the store's named methods to handle errors.
+    public var wrappedValue: Value { get nonmutating set }
+
+    /// Creates a property for interfacing with a preference in the given preferences.
+    ///
+    /// - Parameters:
+    ///   - preference: The preference definition. May be inferred from the wrapper's type.
+    ///   - preferences: The store used for reads and writes.
+    public init(_ preference: Preference.Type = Preference.self, preferences: Preferences)
+}
+```
+
+```swift
+extension Preference where Preferences == UserPreferences {
+
+    /// Creates a property for interfacing with a preference in ``UserPreferences``.
+    ///
+    /// - Parameters:
+    ///   - preference: The preference definition. May be inferred from the wrapper's type.
+    ///   - preferences: The store used for reads and writes.
+    public init(_ preference: Preference.Type = Preference.self, preferences: Preferences = .default)
+}
+```
+
+```swift
+extension Preference {
+
+    /// A binding that reads and writes the preference through its store.
+    ///
+    /// - Note: The Swift compiler [does not synthesize the `$` shorthand for `-projectedValue`
+    /// when implemented in an external module](https://forums.swift.org/t/property-wrapper-projectedvalue-cannot-be-in-a-extension/70269).
+    public var projectedValue: Binding<Value> { get }
+
+    /// A convenience alias for `projectedValue`.
+    ///
+    /// This property is available in order to clarify intent but is intended to be removed at a later date.
+    @inline(__always)
+    public var binding: Binding<Value> { get }
+}
+```
 
 #### PreferenceProtocol
 
@@ -134,12 +269,6 @@ public protocol PreferenceProtocol: Sendable {
     ///
     /// Reading the fallback does not persist it.
     static var defaultValue: Value { get }
-
-    @_documentation(visibility: internal)
-    static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value>
-
-    @discardableResult @_documentation(visibility: internal)
-    static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value>
 }
 ```
 
@@ -186,7 +315,7 @@ extension PreferencesProtocol {
     /// fails. A failed write is logged without propagating the error. Use
     /// ``value(forPreference:)`` and ``updateValue(_:forPreference:)`` when
     /// callers need to handle failures.
-    public subscript<Preference>(preference: Preference.Type) -> Preference.Value where Preference: PreferenceProtocol
+    public subscript<Preference>(preference: Preference.Type) -> Preference.Value where Preference: PreferenceProtocol { get nonmutating set }
 }
 ```
 
@@ -207,7 +336,7 @@ public final class UserPreferences: PreferencesProtocol {
     public typealias RemoveFailure = Never
 
     /// The shared preference store backed by `UserDefaults.standard`.
-    public static let `default` = UserPreferences(userDefaults: .standard)
+    public static let `default`: UserPreferences
 
     /// The defaults database backing this store.
     public nonisolated(unsafe) let userDefaults: UserDefaults

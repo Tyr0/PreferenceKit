@@ -8,40 +8,6 @@ import Testing
 @Suite
 struct UserPreferencesTests {
 
-    private enum Constants {
-
-        static let codablePreferences: Array<any PreferenceProtocol.Type> = [
-            TestArrayCodablePreference.self,
-            TestCodablePreference.self,
-            TestOptionalBoolPreference.self,
-        ]
-
-        static let invalidCodablePreferences: Array<any PreferenceProtocol.Type> = [
-            TestInvalidCodablePreference.self,
-        ]
-
-        static let primitivePreferences: Array<any PreferenceProtocol.Type> = [
-            TestArrayBoolPreference.self,
-            TestArrayStringPreference.self,
-            TestBoolPreference.self,
-            TestDictionaryStringArrayStringPreference.self,
-            TestDictionaryStringBoolPreference.self,
-            TestDoublePreference.self,
-            TestFloatPreference.self,
-            TestStringPreference.self,
-        ]
-
-        // does not include `invalidCodablePreferences` as those explicitly fail coding.
-        static var preferences: Array<any PreferenceProtocol.Type> {
-            var preferences: Array<any PreferenceProtocol.Type> = []
-            preferences.append(contentsOf: Self.codablePreferences)
-            preferences.append(contentsOf: Self.primitivePreferences)
-            return preferences
-        }
-
-        static let somePrimitiveValue: String = "SomePrimitiveValue"
-    }
-
     @Test
     func testEmptyReadOptional_WriteNil_ReadNil() async throws {
         func projection<Preference, Wrapped>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol, Preference.Value == Optional<Wrapped> {
@@ -66,7 +32,7 @@ struct UserPreferencesTests {
         try await projection(TestOptionalBoolPreference.self)
     }
 
-    @Test(arguments: Constants.preferences)
+    @Test(arguments: TestConstants.preferences)
     func testEmptyRead_ReturnsDefaultValue(_ preference: any PreferenceProtocol.Type) async throws {
         func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
             try await withUserPreferences { userPreferences in
@@ -100,7 +66,7 @@ struct UserPreferencesTests {
         }
     }
 
-    @Test(arguments: Constants.primitivePreferences)
+    @Test(arguments: TestConstants.primitivePreferences)
     func testWrite_UserDefaultsValue(_ preference: any PreferenceProtocol.Type) async throws {
         func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
             try await withUserPreferences { userPreferences in
@@ -123,7 +89,7 @@ struct UserPreferencesTests {
         try await projection(preference)
     }
 
-    @Test(arguments: Constants.preferences)
+    @Test(arguments: TestConstants.preferences)
     func testEmptyRead_Update_Delete(_ preference: any PreferenceProtocol.Type) async throws {
         func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
             try await withUserPreferences { userPreferences in
@@ -150,7 +116,7 @@ struct UserPreferencesTests {
     @Suite
     struct CodableTests {
 
-        @Test(arguments: Constants.codablePreferences)
+        @Test(arguments: TestConstants.codablePreferences)
         func testRead_InvalidValue_ThrowsDecodingError(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
@@ -159,7 +125,7 @@ struct UserPreferencesTests {
                     let existingValue = userDefaults.object(forKey: Preference.key)
                     #expect(existingValue == nil)
 
-                    userDefaults.set(Constants.somePrimitiveValue, forKey: Preference.key)
+                    userDefaults.set(TestConstants.somePrimitiveValue, forKey: Preference.key)
 
                     defer { userDefaults.removeObject(forKey: Preference.key) }
 
@@ -171,14 +137,14 @@ struct UserPreferencesTests {
                     #expect(subscriptValue == Preference.defaultValue)
 
                     let persistedValue = userDefaults.string(forKey: Preference.key)
-                    #expect(persistedValue == Constants.somePrimitiveValue)
+                    #expect(persistedValue == TestConstants.somePrimitiveValue)
                 }
             }
 
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.invalidCodablePreferences)
+        @Test(arguments: TestConstants.invalidCodablePreferences)
         func testWrite_InvalidValue_ThrowsEncodingError(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
@@ -206,7 +172,7 @@ struct UserPreferencesTests {
     @Suite
     struct ObservationTests {
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Read_Delete_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
@@ -232,7 +198,7 @@ struct UserPreferencesTests {
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Delete_Delete_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
@@ -256,7 +222,7 @@ struct UserPreferencesTests {
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Update_Read_Delete_Observes(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 try await withUserPreferences { userPreferences in
@@ -284,7 +250,7 @@ struct UserPreferencesTests {
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Update_Delete_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
@@ -310,7 +276,7 @@ struct UserPreferencesTests {
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Read_Update_Observes(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 try await withUserPreferences { userPreferences in
@@ -338,7 +304,7 @@ struct UserPreferencesTests {
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Read_UpdateViaUserDefaults_Observes(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
@@ -356,7 +322,7 @@ struct UserPreferencesTests {
                             confirmation()
                         })
 
-                        userDefaults.set(Constants.somePrimitiveValue, forKey: Preference.key)
+                        userDefaults.set(TestConstants.somePrimitiveValue, forKey: Preference.key)
                     }
 
                     userDefaults.removeObject(forKey: Preference.key)
@@ -366,7 +332,7 @@ struct UserPreferencesTests {
             try await projection(preference)
         }
 
-        @Test(arguments: Constants.preferences)
+        @Test(arguments: TestConstants.preferences)
         func testEmpty_Update_Read_UpdateSameValue_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 try await withUserPreferences { userPreferences in
