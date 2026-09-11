@@ -1,4 +1,5 @@
 
-public struct _WriteOutputs<Value>: Sendable where Value: Sendable {
+@_documentation(visibility: internal)
+public struct _WriteOutputs<Value> {
 
 }

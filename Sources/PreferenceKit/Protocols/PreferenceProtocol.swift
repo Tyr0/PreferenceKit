@@ -3,12 +3,33 @@ import Foundation
 
 internal import os.log
 
+/// A typed preference definition for interfacing with a corresponding ``PreferencesProtocol``.
+///
+/// Conform a type for each preference, then provide it to a ``PreferencesProtocol`` instance:
+///
+/// ```swift
+/// enum ShowDebugMenuPreference: PreferenceProtocol {
+///     static let key = "showDebugMenu"
+///     static let defaultValue = false
+/// }
+///
+/// let preferences = UserPreferences()
+/// let showDebugMenu = preferences[ShowDebugMenuPreference.self]
+/// ```
 public protocol PreferenceProtocol: Sendable {
 
+    /// The value stored for this preference.
     associatedtype Value: Codable & Equatable & Sendable
 
+    /// The key identifying this preference in the store.
+    ///
+    /// - Note: Use a stable, unique key for each preference. Changing the key
+    /// does not migrate values stored under the previous key.
     static var key: String { get }
 
+    /// The fallback returned when no stored value exists.
+    ///
+    /// Reading the fallback does not persist it.
     static var defaultValue: Value { get }
 
     @_documentation(visibility: internal)

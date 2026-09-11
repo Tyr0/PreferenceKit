@@ -1,12 +1,12 @@
 
 import Foundation
 
-public struct _WriteInputs: Sendable {
+@_documentation(visibility: internal)
+public struct _WriteInputs {
 
     // MARK: - Properties
 
-    // TODO: document safety
-    nonisolated(unsafe) internal let userDefaults: UserDefaults
+    internal let userDefaults: UserDefaults
 
     internal let encoder: JSONEncoder
 }

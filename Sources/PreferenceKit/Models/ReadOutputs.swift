@@ -1,5 +1,6 @@
 
-public struct _ReadOutputs<Value>: Sendable where Value: Sendable {
+@_documentation(visibility: internal)
+public struct _ReadOutputs<Value> {
 
     // MARK: - Properties
 
