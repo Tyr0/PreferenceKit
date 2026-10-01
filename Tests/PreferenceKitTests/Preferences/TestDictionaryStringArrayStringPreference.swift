@@ -1,7 +1,6 @@
-
 import PreferenceKit
 
-enum TestDictionaryStringArrayStringPreference: PreferenceProtocol {
+enum TestDictionaryStringArrayStringPreference: PreferenceProtocol { // swiftlint:disable:this type_name
 
     static let key: String = "TestDictionaryStringArrayStringPreference"
 

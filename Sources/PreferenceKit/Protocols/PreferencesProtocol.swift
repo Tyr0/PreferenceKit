@@ -1,4 +1,3 @@
-
 import Observation
 
 internal import os.log
@@ -50,9 +49,9 @@ extension PreferencesProtocol {
                 return try self.value(forPreference: preference)
             } catch {
                 Logger.preferences.error("Attempted to read \(_typeName(Preference.self)) but received error instead: \(error)")
-
-                return Preference.defaultValue
             }
+
+            return Preference.defaultValue
         }
         nonmutating set {
             do {

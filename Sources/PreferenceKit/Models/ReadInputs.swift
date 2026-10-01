@@ -1,8 +1,7 @@
-
 import Foundation
 
 @_documentation(visibility: internal)
-public struct _ReadInputs {
+public struct _ReadInputs { // swiftlint:disable:this type_name
 
     // MARK: - Properties
 

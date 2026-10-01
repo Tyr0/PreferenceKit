@@ -1,10 +1,3 @@
-//
-//  TestConstants.swift
-//  PreferenceKit
-//
-//  Created by Tyler Calderone on 9/10/26.
-//
-
 import PreferenceKit
 
 enum TestConstants {

@@ -1,4 +1,3 @@
-
 struct TestCodable: Codable, Equatable, Sendable {
 
     typealias Identifier = UInt64

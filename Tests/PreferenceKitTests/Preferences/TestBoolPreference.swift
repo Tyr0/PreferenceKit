@@ -1,4 +1,3 @@
-
 import PreferenceKit
 
 enum TestBoolPreference: PreferenceProtocol {

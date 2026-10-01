@@ -1,4 +1,3 @@
-
 import Foundation
 import Observation
 import Testing
@@ -90,7 +89,7 @@ struct UserPreferencesTests {
     }
 
     @Test(arguments: TestConstants.preferences)
-    func testEmptyRead_Update_Delete(_ preference: any PreferenceProtocol.Type) async throws {
+    func testEmptyRead_Update_Remove(_ preference: any PreferenceProtocol.Type) async throws {
         func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
             try await withUserPreferences { userPreferences in
                 let userDefaults = userPreferences.userDefaults
@@ -173,7 +172,7 @@ struct UserPreferencesTests {
     struct ObservationTests {
 
         @Test(arguments: TestConstants.preferences)
-        func testEmpty_Read_Delete_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
+        func testEmpty_Read_Remove_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
                     let userDefaults = userPreferences.userDefaults
@@ -199,7 +198,7 @@ struct UserPreferencesTests {
         }
 
         @Test(arguments: TestConstants.preferences)
-        func testEmpty_Delete_Delete_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
+        func testEmpty_Remove_Remove_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
                     let userDefaults = userPreferences.userDefaults
@@ -223,7 +222,7 @@ struct UserPreferencesTests {
         }
 
         @Test(arguments: TestConstants.preferences)
-        func testEmpty_Update_Read_Delete_Observes(_ preference: any PreferenceProtocol.Type) async throws {
+        func testEmpty_Update_Read_Remove_Observes(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 try await withUserPreferences { userPreferences in
                     let userDefaults = userPreferences.userDefaults
@@ -251,7 +250,7 @@ struct UserPreferencesTests {
         }
 
         @Test(arguments: TestConstants.preferences)
-        func testEmpty_Update_Delete_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
+        func testEmpty_Update_Remove_DoesNotObserve(_ preference: any PreferenceProtocol.Type) async throws {
             func projection<Preference>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol {
                 await withUserPreferences { userPreferences in
                     let userDefaults = userPreferences.userDefaults

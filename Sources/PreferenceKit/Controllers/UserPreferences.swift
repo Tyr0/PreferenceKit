@@ -1,4 +1,3 @@
-
 import Foundation
 import Observation
 
@@ -156,7 +155,7 @@ public final class UserPreferences: PreferencesProtocol {
 
         // MARK: - Private Functions
 
-        private subscript(observationKeyPath _: String) -> Void {
+        private subscript(observationKeyPath _: String) -> Void { // swiftlint:disable:this redundant_void_return
             fatalError()
         }
 
@@ -166,7 +165,7 @@ public final class UserPreferences: PreferencesProtocol {
 
         // MARK: - NSObject (NSKeyValueObserving) Functions
 
-        override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: Dictionary<NSKeyValueChangeKey, Any>?, context: UnsafeMutableRawPointer?) {
+        override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: Dictionary<NSKeyValueChangeKey, Any>?, context: UnsafeMutableRawPointer?) { // swiftlint:disable:this block_based_kvo
             guard context == &ObservationContext else {
                 return super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             }

@@ -1,9 +1,6 @@
-
 internal import os.log
 
 /// A property wrapper type that reflects a preference from a ``PreferencesProtocol``.
-///
-/// Accesses use the store's non-throwing subscript and preserve its observation behavior.
 @propertyWrapper
 public struct Preference<Preferences, Preference>: Sendable where Preferences: PreferencesProtocol, Preference: PreferenceProtocol {
 
@@ -27,9 +24,9 @@ public struct Preference<Preferences, Preference>: Sendable where Preferences: P
                 return try self.preferences.value(forPreference: Preference.self)
             } catch {
                 Logger.preference.error("Attempted to read \(_typeName(Preference.self)) but received error instead: \(error)")
-
-                return Preference.defaultValue
             }
+
+            return Preference.defaultValue
         }
         nonmutating set {
             do {

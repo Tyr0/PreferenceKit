@@ -1,6 +1,5 @@
-
 @_documentation(visibility: internal)
-public struct _ReadOutputs<Value> {
+public struct _ReadOutputs<Value> { // swiftlint:disable:this type_name
 
     // MARK: - Properties
 

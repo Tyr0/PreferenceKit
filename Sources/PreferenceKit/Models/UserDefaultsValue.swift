@@ -1,10 +1,9 @@
-
 // A struct type that is publicly-defined but only internally initializable;
 // this prevents arbitrary conformances to the _UserDefaultsRepresentable
 // protocol as external packages cannot initialize their own
 // `_UserDefaultsValue<CustomType>` instances.
 @_documentation(visibility: internal)
-public struct _UserDefaultsValue<Value> {
+public struct _UserDefaultsValue<Value> { // swiftlint:disable:this type_name
 
     internal let value: Optional<Value>
 

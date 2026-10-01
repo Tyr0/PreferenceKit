@@ -6,7 +6,7 @@ values through a shared store or a `UserDefaults` suite.
 
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Platforms](https://img.shields.io/badge/Platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20visionOS%20%7C%20watchOS-blue.svg)
-![Swift](https://img.shields.io/badge/Swift-6.0-orange.svg)
+![Swift](https://img.shields.io/badge/Swift-6.3-orange.svg)
 
 ## Overview
 
@@ -14,7 +14,7 @@ values through a shared store or a `UserDefaults` suite.
 
 ## Requirements
 
-- Swift 6+
+- Swift 6.3+
 - iOS 17+ / macOS 14+ / Mac Catalyst 17+ / tvOS 17+ / visionOS 1+ / watchOS 10+
 
 ## Usage
