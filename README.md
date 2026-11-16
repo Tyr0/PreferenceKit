@@ -257,7 +257,7 @@ A typed preference definition for interfacing with a corresponding `PreferencesP
 public protocol PreferenceProtocol: Sendable {
 
     /// The value stored for this preference.
-    associatedtype Value: Codable & Equatable & Sendable
+    associatedtype Value: Equatable & Sendable
 
     /// The key identifying this preference in the store.
     ///

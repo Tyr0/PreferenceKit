@@ -1,7 +1,7 @@
 import Foundation
 
 @_documentation(visibility: internal)
-public protocol _UserDefaultsRepresentable: Equatable, Sendable { // swiftlint:disable:this type_name
+public protocol _UserDefaultsRepresentable: Codable, Equatable, Sendable { // swiftlint:disable:this type_name
 
     static func _userDefaultsValue(from object: AnyObject) -> _UserDefaultsValue<Self>
 }
