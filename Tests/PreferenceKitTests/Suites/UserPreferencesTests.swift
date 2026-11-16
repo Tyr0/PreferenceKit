@@ -169,6 +169,60 @@ struct UserPreferencesTests {
     }
 
     @Suite
+    struct RawValueTests {
+
+        @Test(arguments: TestConstants.rawValuePairs)
+        func testWrite_StoresRawValue(_ preferenceValue: any PreferenceValuePairProtocol) async throws {
+            func projection<Preference>(_ preference: Preference.Type, value: Preference.Value) async throws where Preference: PreferenceProtocol {
+                try await withUserPreferences { userPreferences in
+                    let userDefaults = userPreferences.userDefaults
+
+                    let existingValue = userDefaults.object(forKey: Preference.key)
+                    #expect(existingValue == nil)
+
+                    try userPreferences.updateValue(value, forPreference: Preference.self)
+
+                    let updatedValue = userDefaults.object(forKey: Preference.key)
+                    #expect(updatedValue != nil)
+                    #expect(updatedValue as? Data == nil)
+
+                    userPreferences.removeValue(forPreference: Preference.self)
+
+                    let removedValue = userDefaults.object(forKey: Preference.key)
+                    #expect(removedValue == nil)
+                }
+            }
+
+            func unwrap<PreferenceValuePair>(_ preferenceValue: PreferenceValuePair) async throws where PreferenceValuePair: PreferenceValuePairProtocol {
+                try await projection(PreferenceValuePair.Preference.self, value: preferenceValue.value)
+            }
+
+            try await unwrap(preferenceValue)
+        }
+
+        @Test(arguments: TestConstants.rawValuePreferences)
+        func testRead_InvalidRawValue_ThrowsDecodingError(_ preference: any PreferenceProtocol.Type) async throws {
+            let unlikelyValue: Dictionary<String, Array<Array<Int>>> = [
+                "Foo": [[1]],
+            ]
+
+            func projection<Preference>(_ preference: Preference.Type) async where Preference: PreferenceProtocol {
+                await withUserPreferences { userPreferences in
+                    let userDefaults = userPreferences.userDefaults
+
+                    userDefaults.set(unlikelyValue, forKey: Preference.key)
+
+                    #expect(throws: DecodingError.self) {
+                        try userPreferences.value(forPreference: Preference.self)
+                    }
+                }
+            }
+
+            await projection(preference)
+        }
+    }
+
+    @Suite
     struct ObservationTests {
 
         @Test(arguments: TestConstants.preferences)

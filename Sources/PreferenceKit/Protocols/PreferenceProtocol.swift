@@ -18,7 +18,7 @@ internal import os.log
 public protocol PreferenceProtocol: Sendable {
 
     /// The value stored for this preference.
-    associatedtype Value: Codable & Equatable & Sendable
+    associatedtype Value: Equatable & Sendable
 
     /// The key identifying this preference in the store.
     ///
@@ -38,7 +38,33 @@ public protocol PreferenceProtocol: Sendable {
     static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value>
 }
 
-extension PreferenceProtocol {
+extension PreferenceProtocol where Value: _UserDefaultsRepresentable {
+
+    public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
+        guard let object = inputs.userDefaults.object(forKey: Self.key) else {
+            return _ReadOutputs()
+        }
+
+        let propertyListValue = Value._userDefaultsValue(from: object as AnyObject)
+
+        guard let value = propertyListValue.value else {
+            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.self, DecodingError.Context(
+                codingPath: [],
+                debugDescription: "Expected to decode \(Value.self) but found \(type(of: object)) instead.",
+            )))
+        }
+
+        return _ReadOutputs(value: value)
+    }
+
+    public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
+        inputs.userDefaults.set(value, forKey: Self.key)
+
+        return _WriteOutputs()
+    }
+}
+
+extension PreferenceProtocol where Value: Codable {
 
     public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
         guard let object = inputs.userDefaults.object(forKey: Self.key) else {
@@ -86,27 +112,67 @@ extension PreferenceProtocol {
     }
 }
 
-extension PreferenceProtocol where Value: _UserDefaultsRepresentable {
+extension PreferenceProtocol where Value: RawRepresentable, Value.RawValue: _UserDefaultsRepresentable {
 
     public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
         guard let object = inputs.userDefaults.object(forKey: Self.key) else {
             return _ReadOutputs()
         }
 
-        let propertyListValue = Value._userDefaultsValue(from: object as AnyObject)
+        let propertyListRawValue = Value.RawValue._userDefaultsValue(from: object as AnyObject)
 
-        if let value = propertyListValue.value {
-            return _ReadOutputs(value: value)
-        } else {
-            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.self, DecodingError.Context(
+        guard let rawValue = propertyListRawValue.value else {
+            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.RawValue.self, DecodingError.Context(
                 codingPath: [],
-                debugDescription: "Expected to decode \(Value.self) but found \(type(of: object)) instead.",
+                debugDescription: "Expected to decode \(Value.RawValue.self) but found \(type(of: object)) instead.",
             )))
         }
+
+        guard let value = Value(rawValue: rawValue) else {
+            throw _ReadFailure(underlyingError: DecodingError.dataCorrupted(DecodingError.Context(
+                codingPath: [],
+                debugDescription: "Failed to initialize \(Value.self) with rawValue \(rawValue).",
+            )))
+        }
+
+        return _ReadOutputs(value: value)
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        inputs.userDefaults.set(value, forKey: Self.key)
+        inputs.userDefaults.set(value.rawValue, forKey: Self.key)
+
+        return _WriteOutputs()
+    }
+}
+
+extension PreferenceProtocol where Value: Codable & RawRepresentable, Value.RawValue: _UserDefaultsRepresentable {
+
+    public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
+        guard let object = inputs.userDefaults.object(forKey: Self.key) else {
+            return _ReadOutputs()
+        }
+
+        let propertyListRawValue = Value.RawValue._userDefaultsValue(from: object as AnyObject)
+
+        guard let rawValue = propertyListRawValue.value else {
+            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.RawValue.self, DecodingError.Context(
+                codingPath: [],
+                debugDescription: "Expected to decode \(Value.RawValue.self) but found \(type(of: object)) instead.",
+            )))
+        }
+
+        guard let value = Value(rawValue: rawValue) else {
+            throw _ReadFailure(underlyingError: DecodingError.dataCorrupted(DecodingError.Context(
+                codingPath: [],
+                debugDescription: "Failed to initialize \(Value.self) with rawValue \(rawValue).",
+            )))
+        }
+
+        return _ReadOutputs(value: value)
+    }
+
+    public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
+        inputs.userDefaults.set(value.rawValue, forKey: Self.key)
 
         return _WriteOutputs()
     }
