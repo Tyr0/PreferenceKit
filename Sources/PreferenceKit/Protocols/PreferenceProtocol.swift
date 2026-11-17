@@ -136,7 +136,7 @@ extension PreferenceProtocol where Value: Codable & _OptionalProtocol, Value.Wra
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        if let optionalValue = value._optionalValue {
+        if let optionalValue = value._optionalValue.value {
             inputs.writeObject(optionalValue, forKey: Self.key)
         } else {
             inputs.removeObject(forKey: Self.key)
@@ -157,7 +157,7 @@ extension PreferenceProtocol where Value: _OptionalProtocol, Value.Wrapped: RawR
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        if let optionalValue = value._optionalValue {
+        if let optionalValue = value._optionalValue.value {
             inputs.writeObject(optionalValue.rawValue, forKey: Self.key)
         } else {
             inputs.removeObject(forKey: Self.key)
@@ -178,7 +178,7 @@ extension PreferenceProtocol where Value: Codable & _OptionalProtocol, Value.Wra
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        if let optionalValue = value._optionalValue {
+        if let optionalValue = value._optionalValue.value {
             inputs.writeObject(optionalValue.rawValue, forKey: Self.key)
         } else {
             inputs.removeObject(forKey: Self.key)
