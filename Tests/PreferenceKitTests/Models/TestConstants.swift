@@ -5,7 +5,6 @@ enum TestConstants {
     static let codablePreferences: Array<any PreferenceProtocol.Type> = [
         TestArrayCodablePreference.self,
         TestCodablePreference.self,
-        TestOptionalBoolPreference.self,
     ]
 
     static let invalidCodablePreferences: Array<any PreferenceProtocol.Type> = [
@@ -20,11 +19,14 @@ enum TestConstants {
         TestDictionaryStringBoolPreference.self,
         TestDoublePreference.self,
         TestFloatPreference.self,
+        TestOptionalBoolPreference.self,
         TestStringPreference.self,
     ]
 
     static let rawValuePreferences: Array<any PreferenceProtocol.Type> = [
         TestCodableRawRepresentablePreference.self,
+        TestOptionalCodableRawRepresentablePreference.self,
+        TestOptionalRawRepresentablePreference.self,
         TestRawRepresentableArrayPreference.self,
         TestRawRepresentableDictionaryPreference.self,
     ]
@@ -40,6 +42,8 @@ enum TestConstants {
 
     static let rawValuePairs: Array<any PreferenceValuePairProtocol> = [
         PreferenceValuePair<TestCodableRawRepresentablePreference>(value: TestCodableRawRepresentable(rawValue: "SomeUpdatedValue")),
+        PreferenceValuePair<TestOptionalCodableRawRepresentablePreference>(value: TestCodableRawRepresentable(rawValue: "SomeUpdatedValue")),
+        PreferenceValuePair<TestOptionalRawRepresentablePreference>(value: TestRawRepresentable(rawValue: "SomeUpdatedValue")),
         PreferenceValuePair<TestRawRepresentableArrayPreference>(value: TestRawRepresentable(rawValue: ["SomeUpdatedValue"])),
         PreferenceValuePair<TestRawRepresentableDictionaryPreference>(value: TestRawRepresentable(rawValue: ["SomeUpdatedValue": 1])),
     ]

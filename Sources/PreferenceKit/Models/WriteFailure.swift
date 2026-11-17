@@ -1,5 +1,5 @@
 @_documentation(visibility: internal)
-public struct _WriteFailure: Error { // swiftlint:disable:this type_name
+public struct _WriteFailure: Error {
 
     internal let underlyingError: EncodingError
 }
