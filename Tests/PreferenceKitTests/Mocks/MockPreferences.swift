@@ -27,12 +27,16 @@ final class MockPreferences: PreferencesProtocol {
     // MARK: - PreferencesProtocol Conformance
 
     func value<Preference>(forPreference preference: Preference.Type) throws(ReadFailure) -> Preference.Value where Preference: PreferenceProtocol {
-        if let value = self.state.withLock({ state in
-            return state.storage[Preference.key] as? Preference.Value
-        }) {
+        return self.state.withLock { state in
+            guard let value = state.storage[Preference.key] else {
+                return Preference.defaultValue
+            }
+
+            guard let value = value as? Preference.Value else {
+                return Preference.defaultValue
+            }
+
             return value
-        } else {
-            return Preference.defaultValue
         }
     }
 

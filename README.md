@@ -137,6 +137,10 @@ enum AppearancePreference: PreferenceProtocol {
 preferences[AppearancePreference.self] = .dark
 ```
 
+Writing a value of `nil` to an `Optional` preference removes the stored value.
+Subsequent reads return the preference's `defaultValue`, which is not
+necessarily `nil`.
+
 ### Handling Errors
 
 The subscript logs errors. A failed read returns the preference's default; a

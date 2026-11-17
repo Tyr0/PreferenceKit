@@ -11,8 +11,10 @@ private nonisolated(unsafe) var ObservationContext: UInt8 = 0
 /// `UserDefaults` instance to select a different suite. Reads participate in
 /// Swift `Observation` for the preference keys they access.
 ///
-/// Supported primitive values are persisted directly. Other `Codable` values
-/// are serialized and persisted as `Data`.
+/// Supported primitive values, `RawRepresentable` values backed by them, and
+/// optionals of either are persisted directly. Other `Codable` values are
+/// serialized and persisted as `Data`. Writing `Optional.none` removes the
+/// persisted value, so subsequent reads return the preference's default.
 public final class UserPreferences: PreferencesProtocol {
 
     /// The error raised when a persisted value cannot be queried.

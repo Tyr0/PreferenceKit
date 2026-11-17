@@ -8,7 +8,7 @@ import Testing
 struct UserPreferencesTests {
 
     @Test
-    func testEmptyReadOptional_WriteNil_ReadNil() async throws {
+    func testEmptyReadOptional_WriteNil_ReadDefault() async throws {
         func projection<Preference, Wrapped>(_ preference: Preference.Type) async throws where Preference: PreferenceProtocol, Preference.Value == Optional<Wrapped> {
             try await withUserPreferences { userPreferences in
                 let userDefaults = userPreferences.userDefaults
@@ -19,16 +19,22 @@ struct UserPreferencesTests {
                 let defaultValue = try userPreferences.value(forPreference: Preference.self)
                 #expect(defaultValue == Preference.defaultValue)
 
+                try userPreferences.updateValue(Preference.defaultValue, forPreference: Preference.self)
                 try userPreferences.updateValue(nil, forPreference: Preference.self)
 
                 defer { userPreferences.removeValue(forPreference: Preference.self) }
 
+                let removedValue = userDefaults.object(forKey: Preference.key)
+                #expect(removedValue == nil)
+
                 let preferenceValue = try userPreferences.value(forPreference: Preference.self)
-                #expect(preferenceValue == nil)
+                #expect(preferenceValue == Preference.defaultValue)
             }
         }
 
         try await projection(TestOptionalBoolPreference.self)
+        try await projection(TestOptionalCodableRawRepresentablePreference.self)
+        try await projection(TestOptionalRawRepresentablePreference.self)
     }
 
     @Test(arguments: TestConstants.preferences)

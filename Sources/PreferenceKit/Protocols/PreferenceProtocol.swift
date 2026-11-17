@@ -41,24 +41,11 @@ public protocol PreferenceProtocol: Sendable {
 extension PreferenceProtocol where Value: _UserDefaultsRepresentable {
 
     public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
-        guard let object = inputs.userDefaults.object(forKey: Self.key) else {
-            return _ReadOutputs()
-        }
-
-        let propertyListValue = Value._userDefaultsValue(from: object as AnyObject)
-
-        guard let value = propertyListValue.value else {
-            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.self, DecodingError.Context(
-                codingPath: [],
-                debugDescription: "Expected to decode \(Value.self) but found \(type(of: object)) instead.",
-            )))
-        }
-
-        return _ReadOutputs(value: value)
+        return _ReadOutputs(value: try inputs.readObject(Value.self, forKey: Self.key))
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        inputs.userDefaults.set(value, forKey: Self.key)
+        inputs.writeObject(value, forKey: Self.key)
 
         return _WriteOutputs()
     }
@@ -97,7 +84,7 @@ extension PreferenceProtocol where Value: Codable {
         do {
             let data = try inputs.encoder.encode(value)
 
-            inputs.userDefaults.set(data, forKey: Self.key)
+            inputs.writeObject(data, forKey: Self.key)
 
             return _WriteOutputs()
         } catch let error as EncodingError {
@@ -115,31 +102,11 @@ extension PreferenceProtocol where Value: Codable {
 extension PreferenceProtocol where Value: RawRepresentable, Value.RawValue: _UserDefaultsRepresentable {
 
     public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
-        guard let object = inputs.userDefaults.object(forKey: Self.key) else {
-            return _ReadOutputs()
-        }
-
-        let propertyListRawValue = Value.RawValue._userDefaultsValue(from: object as AnyObject)
-
-        guard let rawValue = propertyListRawValue.value else {
-            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.RawValue.self, DecodingError.Context(
-                codingPath: [],
-                debugDescription: "Expected to decode \(Value.RawValue.self) but found \(type(of: object)) instead.",
-            )))
-        }
-
-        guard let value = Value(rawValue: rawValue) else {
-            throw _ReadFailure(underlyingError: DecodingError.dataCorrupted(DecodingError.Context(
-                codingPath: [],
-                debugDescription: "Failed to initialize \(Value.self) with rawValue \(rawValue).",
-            )))
-        }
-
-        return _ReadOutputs(value: value)
+        return _ReadOutputs(value: try inputs.readRawValue(Value.self, forKey: Self.key))
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        inputs.userDefaults.set(value.rawValue, forKey: Self.key)
+        inputs.writeObject(value.rawValue, forKey: Self.key)
 
         return _WriteOutputs()
     }
@@ -148,31 +115,74 @@ extension PreferenceProtocol where Value: RawRepresentable, Value.RawValue: _Use
 extension PreferenceProtocol where Value: Codable & RawRepresentable, Value.RawValue: _UserDefaultsRepresentable {
 
     public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
-        guard let object = inputs.userDefaults.object(forKey: Self.key) else {
-            return _ReadOutputs()
-        }
-
-        let propertyListRawValue = Value.RawValue._userDefaultsValue(from: object as AnyObject)
-
-        guard let rawValue = propertyListRawValue.value else {
-            throw _ReadFailure(underlyingError: DecodingError.typeMismatch(Value.RawValue.self, DecodingError.Context(
-                codingPath: [],
-                debugDescription: "Expected to decode \(Value.RawValue.self) but found \(type(of: object)) instead.",
-            )))
-        }
-
-        guard let value = Value(rawValue: rawValue) else {
-            throw _ReadFailure(underlyingError: DecodingError.dataCorrupted(DecodingError.Context(
-                codingPath: [],
-                debugDescription: "Failed to initialize \(Value.self) with rawValue \(rawValue).",
-            )))
-        }
-
-        return _ReadOutputs(value: value)
+        return _ReadOutputs(value: try inputs.readRawValue(Value.self, forKey: Self.key))
     }
 
     public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
-        inputs.userDefaults.set(value.rawValue, forKey: Self.key)
+        inputs.writeObject(value.rawValue, forKey: Self.key)
+
+        return _WriteOutputs()
+    }
+}
+
+extension PreferenceProtocol where Value: Codable & _OptionalProtocol, Value.Wrapped: _UserDefaultsRepresentable {
+
+    public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
+        if let wrappedValue = try inputs.readObject(Value.Wrapped.self, forKey: Self.key) {
+            return _ReadOutputs(value: Value(wrappedValue))
+        } else {
+            return _ReadOutputs()
+        }
+    }
+
+    public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
+        if let optionalValue = value._optionalValue.value {
+            inputs.writeObject(optionalValue, forKey: Self.key)
+        } else {
+            inputs.removeObject(forKey: Self.key)
+        }
+
+        return _WriteOutputs()
+    }
+}
+
+extension PreferenceProtocol where Value: _OptionalProtocol, Value.Wrapped: RawRepresentable, Value.Wrapped.RawValue: _UserDefaultsRepresentable {
+
+    public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
+        if let wrappedValue = try inputs.readRawValue(Value.Wrapped.self, forKey: Self.key) {
+            return _ReadOutputs(value: Value(wrappedValue))
+        } else {
+            return _ReadOutputs()
+        }
+    }
+
+    public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
+        if let optionalValue = value._optionalValue.value {
+            inputs.writeObject(optionalValue.rawValue, forKey: Self.key)
+        } else {
+            inputs.removeObject(forKey: Self.key)
+        }
+
+        return _WriteOutputs()
+    }
+}
+
+extension PreferenceProtocol where Value: Codable & _OptionalProtocol, Value.Wrapped: Codable & RawRepresentable, Value.Wrapped.RawValue: _UserDefaultsRepresentable {
+
+    public static func _read(inputs: borrowing _ReadInputs) throws(_ReadFailure) -> _ReadOutputs<Value> {
+        if let wrappedValue = try inputs.readRawValue(Value.Wrapped.self, forKey: Self.key) {
+            return _ReadOutputs(value: Value(wrappedValue))
+        } else {
+            return _ReadOutputs()
+        }
+    }
+
+    public static func _write(_ value: Value, inputs: borrowing _WriteInputs) throws(_WriteFailure) -> _WriteOutputs<Value> {
+        if let optionalValue = value._optionalValue.value {
+            inputs.writeObject(optionalValue.rawValue, forKey: Self.key)
+        } else {
+            inputs.removeObject(forKey: Self.key)
+        }
 
         return _WriteOutputs()
     }

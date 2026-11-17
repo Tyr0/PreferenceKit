@@ -3,7 +3,7 @@
 // protocol as external packages cannot initialize their own
 // `_UserDefaultsValue<CustomType>` instances.
 @_documentation(visibility: internal)
-public struct _UserDefaultsValue<Value> { // swiftlint:disable:this type_name
+public struct _UserDefaultsValue<Value> {
 
     internal let value: Optional<Value>
 

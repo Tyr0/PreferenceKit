@@ -26,6 +26,10 @@ public protocol PreferencesProtocol: Observable, Sendable {
 
     /// Inserts or replaces the value for the given preference.
     ///
+    /// Writing `Optional.none` removes the persisted value instead. Subsequent
+    /// reads then return ``PreferenceProtocol/defaultValue``, which is not
+    /// necessarily `nil`.
+    ///
     /// - Throws: A ``WriteFailure`` when the value cannot be persisted.
     func updateValue<Preference>(_ value: Preference.Value, forPreference preference: Preference.Type) throws(WriteFailure) where Preference: PreferenceProtocol
 

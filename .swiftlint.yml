@@ -9,6 +9,7 @@ disabled_rules:
 - optional_data_string_conversion
 - syntactic_sugar
 - trailing_comma
+- type_name
 - unneeded_synthesized_initializer
 
 file_length: 1000
